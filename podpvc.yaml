@@ -1,0 +1,112 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: topolvm-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: topolvm-provisioner
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  namespace: default
+  labels:
+    app.kubernetes.io/name: my-pod
+    app: kubeadm-topolvm-example
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause
+    volumeMounts:
+    - mountPath: /test1
+      name: my-volume
+  volumes:
+  - name: my-volume
+    persistentVolumeClaim:
+      claimName: topolvm-pvc
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: topolvm-pvc-thin
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      # thin-pool size - 2G, with overprovision - 2G *10 and 10Gi ask should work
+      storage: 10Gi
+  storageClassName: topolvm-provisioner-thin
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod-thin
+  namespace: default
+  labels:
+    app.kubernetes.io/name: my-pod-thin
+    app: kubeadm-topolvm-example
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause
+    volumeMounts:
+    - mountPath: /test1
+      name: my-volume
+  volumes:
+  - name: my-volume
+    persistentVolumeClaim:
+      claimName: topolvm-pvc-thin
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod-ephemeral
+  namespace: default
+  labels:
+    app.kubernetes.io/name: my-pod-ephemeral
+    app: kubeadm-topolvm-example
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause
+    volumeMounts:
+    - mountPath: /test1
+      name: my-volume
+  volumes:
+  - name: my-volume
+    ephemeral:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: topolvm-provisioner
