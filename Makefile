@@ -39,12 +39,7 @@ DOMAIN_NAME := topolvm.io
 
 .PHONY: setup
 setup:
-	$(SUDO) apt-get update
-	$(SUDO) apt-get install -y lvm2 xfsprogs thin-provisioning-tools
-	mkdir -p $(BINDIR)
 	mkdir -p build
-	$(CURL) https://get.helm.sh/helm-v$(HELM_VERSION)-linux-amd64.tar.gz \
-	  | tar xvz -C $(BINDIR) --strip-components 1 linux-amd64/helm
 	chmod +x ./kill-cluster.sh
 	chmod +x ./kill-worker.sh
 	chmod +x ./start-cluster.sh
@@ -96,11 +91,7 @@ create-cluster:
 # $(MAKE) init-config ADVERTISE_ADDRESS=$(ADVERTISE_ADDRESS)
 .PHONY: run
 run:
-	$(SUDO) swapoff -a
-	$(SUDO) sed -i '/swap/d' /etc/fstab
 	$(MAKE) create-cluster
-	$(SUDO) chmod 777 /run/containerd/containerd.sock
-	crictl -r unix:///run/containerd/containerd.sock
 	$(KUBECTL) apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.crds.yaml
 	$(KUBECTL) create namespace topolvm-system
 	$(KUBECTL) label namespace topolvm-system $(DOMAIN_NAME)/webhook=ignore
@@ -125,8 +116,6 @@ finish-run:
 # Variables should be assigned with values (IP, TOKEN and HASH) from kubeadm init output
 .PHONY: create-worker
 create-worker:
-	$(SUDO) swapoff -a
-	$(SUDO) sed -i '/swap/d' /etc/fstab
 	$(SUDO) rm -rf /run/topolvm
 	./configure-containerd.sh
 	$(SUDO) ln -s $(TMPDIR)/lvmd /run/topolvm
@@ -221,3 +210,9 @@ stop-lvmd:
 		$(SUDO) losetup -d $$($(SUDO) losetup -j $(BACKING_STORE)/backing_store | cut -d: -f1); \
 		rm -f $(BACKING_STORE)/backing_store; \
 	fi
+
+
+.PHONY: cluster-up
+cluster-up:
+	./installations.sh
+	$(MAKE) create-cluster
