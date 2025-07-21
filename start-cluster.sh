@@ -1,5 +1,3 @@
-make setup
-
 make start-lvmd-control-plane
 
 # Check LVM resources

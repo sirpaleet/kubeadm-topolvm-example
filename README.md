@@ -2,7 +2,7 @@
 # This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
 
 Partially fixes the "sudo systemctl restart user@1000.service" error:
-```
+```console
 sudo nano /etc/pam.d/common-session
 session	optional	pam_systemd.so
 -->
@@ -60,7 +60,7 @@ sudo lvs
 ```
 
 Scaling up:
-```
+```console
 kubectl apply -f demo/statefulset.yaml
 kubectl scale sts/web --replicas=3
 ```
@@ -69,7 +69,7 @@ kubectl scale sts/web --replicas=3
 
 ---
 Clean up STS:
-```
+```console
 kubectl delete -f demo/statefulset.yaml
 kubectl delete pvc -l app=nginx
 ```

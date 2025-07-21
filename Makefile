@@ -6,12 +6,10 @@ HOSTNAME := $(shell hostname)
 BINDIR := $(shell pwd)/bin
 TMPDIR := /tmp/$(HOSTNAME)
 HELM := $(BINDIR)/helm
-# KUBECTL := $(BINDIR)/kubectl
-# KUBEADM := $(BINDIR)/kubeadm
-# KUBELET := $(BINDIR)/kubelet
 KUBECTL := kubectl
 KUBEADM := kubeadm
 KUBELET := kubelet
+# This should be edited to match the installed version
 KUBERNETES_VERSION := 1.32.7
 
 GO_FILES := $(shell find .. -prune -o -path ../test/e2e -prune -o -name '*.go' -print)
@@ -21,31 +19,10 @@ HELM_VALUES_FILE := values.yaml
 LOGICALVOLUME_GK_NAME := logicalvolume.topolvm.io
 DOMAIN_NAME := topolvm.io
 
-# Make sure that the local kubernetes version matches this version, v1.32.2 is supported for TopoLVM now (2.7.2025)
-#$(KUBECTL):
-#	mkdir -p $(BINDIR)
-#	$(CURL) https://dl.k8s.io/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl -o $(KUBECTL)
-#	chmod 755 $(KUBECTL)
-
-#$(KUBEADM):
-#	mkdir -p $(BINDIR)
-#	$(CURL) https://dl.k8s.io/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubeadm -o $(KUBEADM)
-#	chmod 755 $(KUBEADM)
-
-#$(KUBELET):
-#	mkdir -p $(BINDIR)
-#	$(CURL) https://dl.k8s.io/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubelet -o $(KUBELET)
-#	chmod 755 $(KUBELET)
-# $(KUBECTL) $(KUBEADM) $(KUBELET)
-
 .PHONY: setup
 setup:
 	mkdir -p build
-	chmod +x ./kill-cluster.sh
-	chmod +x ./kill-worker.sh
-	chmod +x ./start-cluster.sh
-	chmod +x ./start-worker.sh
-	chmod +x ./configure-containerd.sh
+	./installations.sh
 	
 
 .PHONY: clean
@@ -71,10 +48,8 @@ init-config:
 	envsubst < initconfig-template.yaml  > initconfig.yaml; \
 
 # Creates cluster with control-plane node
-# $(SUDO) $(KUBEADM) init --config=./initconfig.yaml
-# 	$(SUDO) $(KUBEADM) init --kubernetes-version=$(KUBERNETES_VERSION) --pod-network-cidr=192.168.0.0/16; \
-#	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml; \
-# from curl -O https://raw.githubusercontent.com/projectcalico/calico/v3.28.3/manifests/calico.yaml
+# ( $(MAKE) init-config ADVERTISE_ADDRESS=<IP of control-plane node> )
+# ( $(SUDO) $(KUBEADM) init --config=./initconfig.yaml )
 
 .PHONY: create-cluster
 create-cluster:
@@ -88,8 +63,6 @@ create-cluster:
 	$(KUBECTL) create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/custom-resources.yaml
 
 # Setting up cluster with TopoLVM and one control plane node
-# Specify ADVERTISE_ADDRESS (IP of control-plane node)
-# $(MAKE) init-config ADVERTISE_ADDRESS=$(ADVERTISE_ADDRESS)
 .PHONY: run
 run:
 	$(MAKE) create-cluster
@@ -139,17 +112,6 @@ unmount-tmpdir:
 			$(SUDO) umount $$d; \
 		fi; \
 	done
-
-# 	$(KUBECTL) delete -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml; \
-#	$(KUBECTL) wait --for=delete --timeout=120s -n calico-system deployments/calico-kube-controllers; \
-#	$(KUBECTL) delete daemonset -n topolvm-system topolvm-node; \
-#	$(KUBECTL) delete daemonset -n kube-system kube-proxy; \
-#	$(KUBECTL) delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/operator-crds.yaml; \
-#	$(KUBECTL) delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/tigera-operator.yaml; \
-#	$(KUBECTL) delete -f custom-resources.yaml; \
-#	$(KUBECTL) wait --for=delete --timeout=120s -n calico-system deployments/calico-kube-controllers; \
-#	$(KUBECTL) delete daemonset -n topolvm-system topolvm-node; \
-#	$(KUBECTL) delete daemonset -n kube-system kube-proxy; \
 
 # Shuts down control-plane and cluster
 .PHONY: shutdown-cluster
@@ -211,9 +173,3 @@ stop-lvmd:
 		$(SUDO) losetup -d $$($(SUDO) losetup -j $(BACKING_STORE)/backing_store | cut -d: -f1); \
 		rm -f $(BACKING_STORE)/backing_store; \
 	fi
-
-
-.PHONY: cluster-up
-cluster-up:
-	./installations.sh
-	$(MAKE) create-cluster

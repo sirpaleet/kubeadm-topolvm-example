@@ -1,5 +1,3 @@
-make setup
-
 make start-lvmd-worker
 
 # Check LVM resources
