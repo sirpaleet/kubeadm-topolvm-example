@@ -12,6 +12,7 @@ HELM := $(BINDIR)/helm
 KUBECTL := kubectl
 KUBEADM := kubeadm
 KUBELET := kubelet
+KUBERNETES_VERSION := 1.32.7
 
 GO_FILES := $(shell find .. -prune -o -path ../test/e2e -prune -o -name '*.go' -print)
 BACKING_STORE := ./build

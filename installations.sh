@@ -1,6 +1,7 @@
 #!/bin/bash
 # This should be run first on control-plane and then on worker node vm to set up environment.
 # set up environment variables to .bashrc
+
 echo 'export PATH=/home/ubuntu/.krew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
 echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc
 echo 'export KUBECONFIG="$HOME/.kube/config"' >> ~/.bashrc
@@ -10,8 +11,11 @@ echo 'CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock' >> ~/.b
 source ~/.bashrc
 
 # install build-essential and tar
+echo "INSTALL BASICS: "
+sudo apt install build-essential tar
+
+echo "UPDATES: "
 sudo apt-get update
-sudo apt install -y build-essential tar apt-transport-https ca-certificates curl gpg lvm2 xfsprogs thin-provisioning-tools
 
 cd
 # Helm
@@ -21,7 +25,7 @@ chmod 700 get_helm.sh
 
 # runc
 sudo apt-get install runc
-echo "INSTALLATION DONE, next installing cni plugins"
+echo "INSTALLATION OF RUNC DONE"
 # containerd
 echo "DOWNLOADING CONTAINERD RELEASE 2.1.3"
 wget https://github.com/containerd/containerd/releases/download/v2.1.3/containerd-2.1.3-linux-amd64.tar.gz
@@ -37,11 +41,16 @@ wget https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni
 sudo tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.7.1.tgz
 echo "CNI PLUGINS INSTALLATION DONE, next configuration"
 # kubeadm
-# specifically installing 1.32.2 for TopoLVM
+echo "INSTALL OTHER TOOLS: "
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+# here happens error, so  do a manual restart:
+sudo systemctl restart user@1000.service
+# specifically installing 1.32 for TopoLVM
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
-sudo apt-get install -y --allow-downgrades kubelet=1.32.2-1.1 kubeadm=1.32.2-1.1 kubectl=1.32.2-1.1
+sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 sudo systemctl enable --now kubelet
 
@@ -71,16 +80,20 @@ wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/cri
 sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
 rm -f crictl-$VERSION-linux-amd64.tar.gz
 
-sudo touch /etc/crictl.yaml
-sudo echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' >> /etc/crictl.yaml
-sudo echo 'timeout: 0' >> /etc/crictl.yaml
-sudo echo 'debug: false' >> /etc/crictl.yaml
+# Manually do these to fix warning:
+#sudo touch /etc/crictl.yaml
+#sudo echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' >> /etc/crictl.yaml
+#sudo echo 'timeout: 0' >> /etc/crictl.yaml
+#sudo echo 'debug: false' >> /etc/crictl.yaml
 
 # go (delete old and install)
 cd
 wget https://go.dev/dl/go1.24.4.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf go1.24.4.linux-amd64.tar.gz
+
+echo "INSTALL TOOLS FOR TOPOLVM: "
+sudo apt-get install -y lvm2 xfsprogs thin-provisioning-tools
 
 # cloning topolvm
 git clone git@github.com:topolvm/topolvm.git

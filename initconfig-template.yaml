@@ -36,8 +36,6 @@ controllerManager: {}
 dns: {}
 encryptionAlgorithm: RSA-2048
 controlPlaneEndpoint: ${ADVERTISE_ADDRESS}:6443
-dns:
-  type: CoreDNS
 etcd:
   local:
     dataDir: /var/lib/etcd
