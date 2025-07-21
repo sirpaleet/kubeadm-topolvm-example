@@ -3,9 +3,8 @@ include ../versions.mk
 SUDO := sudo
 CURL := curl -sSLf
 HOSTNAME := $(shell hostname)
-BINDIR := $(shell pwd)/bin
 TMPDIR := /tmp/$(HOSTNAME)
-HELM := $(BINDIR)/helm
+HELM := helm
 KUBECTL := kubectl
 KUBEADM := kubeadm
 KUBELET := kubelet
@@ -21,10 +20,8 @@ DOMAIN_NAME := topolvm.io
 
 .PHONY: setup
 setup:
-	mkdir -p build
 	./installations.sh
 	
-
 .PHONY: clean
 clean: stop-lvmd
 	rm -rf build/ $(TMPDIR)
@@ -50,7 +47,6 @@ init-config:
 # Creates cluster with control-plane node
 # ( $(MAKE) init-config ADVERTISE_ADDRESS=<IP of control-plane node> )
 # ( $(SUDO) $(KUBEADM) init --config=./initconfig.yaml )
-
 .PHONY: create-cluster
 create-cluster:
 	./configure-containerd.sh
@@ -144,6 +140,7 @@ shutdown-worker:
 # Separating lvmd start commands because of possible differences later (memory, directories etc.)
 .PHONY: start-lvmd-control-plane
 start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
+	mkdir -p build
 	go build -o build/lvmd ../cmd/lvmd
 	if [ -f $(BACKING_STORE)/backing_store ]; then $(MAKE) stop-lvmd; fi; \
 	mkdir -p $(TMPDIR)/lvmd; \
@@ -155,6 +152,7 @@ start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
 
 .PHONY: start-lvmd-worker
 start-lvmd-worker: $(TMPDIR)/lvmd/lvmd.yaml
+	mkdir -p build
 	go build -o build/lvmd ../cmd/lvmd
 	if [ -f $(BACKING_STORE)/backing_store ]; then $(MAKE) stop-lvmd; fi; \
 	mkdir -p $(TMPDIR)/lvmd; \

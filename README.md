@@ -1,18 +1,20 @@
 # Multiple pods and pvcs with kubeadm init-made cluster. Two nodes: control-plane and worker on different vm:s.
-# This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
+## This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
 
 Partially fixes the "sudo systemctl restart user@1000.service" error:
+1. Open file:
 ```console
 sudo nano /etc/pam.d/common-session
+```
+2. Change line:
 session	optional	pam_systemd.so
 -->
 session	required	pam_systemd.so
+3. Lastly:
 logout & login
-```
 
-Give installations script rights and execute it. Do this on both the worker and control-plane.
+Install required packages and configure. Do this on both the worker and control-plane.
 ```console
-chmod +x ./installations.sh
 ./installations.sh
 ```
 
