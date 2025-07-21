@@ -1,7 +1,19 @@
 # Multiple pods and pvcs with kubeadm init-made cluster. Two nodes: control-plane and worker on different vm:s.
 ## This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
 
-Partially fixes the "sudo systemctl restart user@1000.service" error:
+Add environment variables. (Do this on both the worker and control-plane.):
+```console
+echo 'export PATH=/home/ubuntu/.krew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
+echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc
+echo 'export KUBECONFIG="$HOME/.kube/config"' >> ~/.bashrc
+echo 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' >> ~/.bashrc
+echo 'LD_RUN_PATH=$LD_RUN_PATH:/usr/local/lib' >> ~/.bashrc
+echo 'CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock' >> ~/.bashrc
+echo 'export SKIP_TESTS_USING_ROOT=1' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Partially fixes the "sudo systemctl restart user@1000.service" error. (Do this on both the worker and control-plane.):
 1. Open file:
 ```console
 sudo nano /etc/pam.d/common-session
@@ -13,7 +25,7 @@ session	required	pam_systemd.so
 3. Lastly:
 logout & login
 
-Install required packages and configure. Do this on both the worker and control-plane.
+Install required packages and configure. (Do this on both the worker and control-plane.):
 ```console
 ./installations.sh
 ```

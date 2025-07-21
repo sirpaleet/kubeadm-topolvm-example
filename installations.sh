@@ -1,15 +1,6 @@
 #!/bin/bash
 # This should be run first on control-plane and then on worker node vm to set up environment.
 
-# set up environment variables to .bashrc
-echo 'export PATH=/home/ubuntu/.krew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
-echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc
-echo 'export KUBECONFIG="$HOME/.kube/config"' >> ~/.bashrc
-echo 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' >> ~/.bashrc
-echo 'LD_RUN_PATH=$LD_RUN_PATH:/usr/local/lib' >> ~/.bashrc
-echo 'CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock' >> ~/.bashrc
-source ~/.bashrc
-
 # install build-essential and tar
 echo "INSTALL BASICS: "
 sudo apt install build-essential tar
@@ -96,7 +87,6 @@ cd
 wget https://go.dev/dl/go1.24.4.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf go1.24.4.linux-amd64.tar.gz
-source ~/.bashrc
 
 echo "INSTALL TOOLS FOR TOPOLVM: "
 sudo apt-get install -y lvm2 xfsprogs thin-provisioning-tools
@@ -108,9 +98,6 @@ cd ~/topolvm
 git remote rename origin upstream
 git remote add origin git@github.com:Nordix/topolvm.git
 git remote -v
-# For TopoLVM:
-echo 'export SKIP_TESTS_USING_ROOT=1' >> ~/.bashrc
-source ~/.bashrc
 
 # moving this directory
 sudo mv ../kubeadm-topolvm-example ~/topolvm/kubeadm-topolvm-example
