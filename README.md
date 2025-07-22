@@ -84,7 +84,7 @@ kubectl scale sts/web --replicas=3
 ---
 Clean up STS:
 ```console
-kubectl delete -f demo/statefulset.yaml
+kubectl delete -f statefulset.yaml
 kubectl delete pvc -l app=nginx
 ```
 

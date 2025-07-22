@@ -54,9 +54,7 @@ create-cluster:
 	mkdir -p ${HOME}/.kube; \
 	$(SUDO) cp -i /etc/kubernetes/admin.conf ${HOME}/.kube/config; \
 	$(SUDO) chown $$(id -u):$$(id -g) ${HOME}/.kube/config; \
-	$(KUBECTL) create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/operator-crds.yaml
-	$(KUBECTL) create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/tigera-operator.yaml
-	$(KUBECTL) create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/custom-resources.yaml
+	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml; \
 
 # Setting up cluster with TopoLVM and one control plane node
 .PHONY: run
@@ -70,14 +68,11 @@ run:
 	$(HELM) repo add jetstack https://charts.jetstack.io
 	$(HELM) repo update
 	$(HELM) dependency build ../charts/topolvm/
-	$(KUBECTL) create configmap lvmd-config \
-	  --from-file=lvmd.yaml=$(shell pwd)/../deploy/lvmd-config/lvmd.yaml \
-	  -n topolvm-system
 
 # Called after join
 .PHONY: finish-run
 finish-run:
-	$(HELM) install --namespace=topolvm-system topolvm ../charts/topolvm/ -f $(HELM_VALUES_FILE) --set lvmd.enabled=true --set lvmd.configMap=lvmd-config
+	$(HELM) install --namespace=topolvm-system topolvm ../charts/topolvm/ -f $(HELM_VALUES_FILE)
 	$(KUBECTL) wait --for=condition=available --timeout=120s -n topolvm-system deployments/topolvm-controller
 	$(KUBECTL) wait --for=condition=ready --timeout=120s -n topolvm-system -l="app.kubernetes.io/component=controller,app.kubernetes.io/name=topolvm" pod
 	$(KUBECTL) wait --for=condition=ready --timeout=120s -n topolvm-system certificate/topolvm-mutatingwebhook
