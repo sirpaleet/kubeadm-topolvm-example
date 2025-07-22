@@ -15,7 +15,7 @@ GO_FILES := $(shell find .. -prune -o -path ../test/e2e -prune -o -name '*.go' -
 BACKING_STORE := ./build
 
 HELM_VALUES_FILE := values.yaml
-LOGICALVOLUME_GK_NAME := logicalvolume.topolvm.io
+# LOGICALVOLUME_GK_NAME := logicalvolume.topolvm.io
 DOMAIN_NAME := topolvm.io
 
 .PHONY: setup
@@ -49,6 +49,7 @@ init-config:
 # ( $(SUDO) $(KUBEADM) init --config=./initconfig.yaml )
 .PHONY: create-cluster
 create-cluster:
+	$(SUDO) rm -rf /run/topolvm
 	./configure-containerd.sh
 	$(SUDO) $(KUBEADM) init --kubernetes-version=$(KUBERNETES_VERSION) --cri-socket=unix:///run/containerd/containerd.sock  --pod-network-cidr=192.168.0.0/16 --upload-certs; \
 	mkdir -p ${HOME}/.kube; \
@@ -88,12 +89,14 @@ create-worker:
 
 # Applies pods and pvcs to worker node
 # Specify WORKERNAME
+# ( timeout 120 sh -c "until $(KUBECTL) apply -f podpvc.yaml; do sleep 10; done" )
+# ( $(KUBECTL) wait --for=condition=ready --timeout=120s -n default pod -l app=kubeadm-topolvm-example )
+# ( [ $$($(KUBECTL) get --no-headers=true $(LOGICALVOLUME_GK_NAME) | wc -l) -ne 0 ] ) 
 .PHONY: complete-worker
 complete-worker:
 	$(KUBECTL) label node $(WORKERNAME) node-role.kubernetes.io/worker=worker
-	timeout 120 sh -c "until $(KUBECTL) apply -f podpvc.yaml; do sleep 10; done"
-	$(KUBECTL) wait --for=condition=ready --timeout=120s -n default pod -l app=kubeadm-topolvm-example
-	[ $$($(KUBECTL) get --no-headers=true $(LOGICALVOLUME_GK_NAME) | wc -l) -ne 0 ]
+	timeout 120 sh -c "until $(KUBECTL) apply -f statefulset.yaml; do sleep 20; done"
+	$(KUBECTL) get pods -A --output=wide -w
 
 # Unmounts tmpdir directories
 .PHONY: unmount-tmpdir
@@ -108,16 +111,24 @@ unmount-tmpdir:
 .PHONY: shutdown-cluster
 shutdown-cluster:
 	$(SUDO) $(KUBEADM) reset --force --cri-socket=unix:///run/containerd/containerd.sock; \
+	$(SUDO) rm /run/topolvm; \
 	$(MAKE) unmount-tmpdir; \
 
 # Deletes worker node from control-plane's side (from cluster) (1.)
 # Specify WORKERNAME
 .PHONY: remove-worker
 remove-worker:
-	$(KUBECTL) delete -f ./podpvc.yaml
+	$(MAKE) remove-pods
 	$(KUBECTL) cordon $(WORKERNAME)
 	$(KUBECTL) delete node $(WORKERNAME) --timeout=120s
-	watch $(KUBECTL) get pods --all-namespaces --output=wide
+	$(KUBECTL) get pods -A --output=wide -w
+
+# Removes the pods and pvcs of the statefulset
+# ( $(KUBECTL) delete -f ./podpvc.yaml )
+.PHONY: remove-pods
+remove-pods:
+	kubectl delete -f statefulset.yaml
+	kubectl delete pvc -l app=nginx
 
 # OR (this can be used instead, in case you wish to re-use the node)
 # Specify WORKERNAME
@@ -128,11 +139,11 @@ drain-worker:
 # Shuts down worker node on the worker node's side (2.)
 .PHONY: shutdown-worker
 shutdown-worker:
-	$(SUDO) $(KUBEADM) reset --force --cri-socket=unix:///run/containerd/containerd.sock
-	$(MAKE) unmount-tmpdir
-	$(SUDO) rm /run/topolvm
+	$(SUDO) $(KUBEADM) reset --force --cri-socket=unix:///run/containerd/containerd.sock; \
+	$(MAKE) unmount-tmpdir; \
+	$(SUDO) rm /run/topolvm; \
 
-# Separating lvmd start commands because of possible differences later (memory, directories etc.)
+# Separate lvmd commands for memory management in control-plane vs. workers
 .PHONY: start-lvmd-control-plane
 start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
 	mkdir -p build
@@ -145,13 +156,14 @@ start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
 	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \
 	$(SUDO) systemd-run --unit=lvmd.service $(shell pwd)/build/lvmd --config=$(TMPDIR)/lvmd/lvmd.yaml; \
 
+# Separate lvmd commands for memory management in control-plane vs. workers
 .PHONY: start-lvmd-worker
 start-lvmd-worker: $(TMPDIR)/lvmd/lvmd.yaml
 	mkdir -p build
 	go build -o build/lvmd ../cmd/lvmd
 	if [ -f $(BACKING_STORE)/backing_store ]; then $(MAKE) stop-lvmd; fi; \
 	mkdir -p $(TMPDIR)/lvmd; \
-	truncate --size=20G $(BACKING_STORE)/backing_store; \
+	truncate --size=40G $(BACKING_STORE)/backing_store; \
 	$(SUDO) losetup -f $(BACKING_STORE)/backing_store; \
 	$(SUDO) vgcreate -f -y myvg1 $$($(SUDO) losetup -j $(BACKING_STORE)/backing_store | cut -d: -f1); \
 	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \

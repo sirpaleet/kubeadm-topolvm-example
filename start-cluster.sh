@@ -9,5 +9,5 @@ make run
 
 # Check status
 kubectl get deployments -A
-kubectl get pods --all-namespaces
+kubectl get pods -A --output=wide
 kubectl get nodes

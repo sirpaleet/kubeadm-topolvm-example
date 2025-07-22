@@ -1,7 +1,7 @@
 # Multiple pods and pvcs with kubeadm init-made cluster. Two nodes: control-plane and worker on different vm:s.
 ## This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
 
-Add environment variables. (Do this on both the worker and control-plane.):
+Add environment variables:
 ```console
 echo 'export PATH=/home/ubuntu/.krew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
 echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc
@@ -13,7 +13,7 @@ echo 'export SKIP_TESTS_USING_ROOT=1' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Partially fixes the "sudo systemctl restart user@1000.service" error. (Do this on both the worker and control-plane.):
+Partially fixes the "sudo systemctl restart user@1000.service" error:
 1. Open file:
 ```console
 sudo nano /etc/pam.d/common-session
@@ -25,7 +25,7 @@ session	required	pam_systemd.so
 3. Lastly:
 logout & login
 
-Install required packages and configure. (Do this on both the worker and control-plane.):
+Install required packages and configure. Do this on both the worker and control-plane.
 ```console
 ./installations.sh
 ```
@@ -62,11 +62,11 @@ make complete-worker WORKERNAME=<worker-name>
 On control-plane vm:
 ```console
 kubectl get deployments -A
-kubectl get pods --all-namespaces
+kubectl get pods -A
 kubectl get nodes
-kubectl get pods --all-namespaces --output=wide
-kubectl get daemonsets --all-namespaces
-kubectl get pvc --all-namespaces
+kubectl get pods -A --output=wide
+kubectl get daemonsets -A
+kubectl get pvc -A
 kubectl get configmaps
 sudo pvs
 sudo vgs
@@ -75,17 +75,23 @@ sudo lvs
 
 Scaling up:
 ```console
-kubectl apply -f demo/statefulset.yaml
 kubectl scale sts/web --replicas=3
 ```
 
 ## To clean up
 
 ---
-Clean up STS:
+Clean up STS (also part of remove-worker):
 ```console
-kubectl delete -f statefulset.yaml
-kubectl delete pvc -l app=nginx
+make remove-pods
+```
+
+Scaling down:
+```console
+kubectl scale sts/web --replicas=1
+kubectl get pods
+kubectl get pvc
+kubectl delete pvc <name>
 ```
 
 ---
@@ -98,8 +104,8 @@ On worker vm:
 ```console
 ./kill-worker.sh
 ```
+OR
 
----
 If you intend to reuse node:
 
 On control-plane vm:
