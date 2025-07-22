@@ -73,9 +73,19 @@ sudo vgs
 sudo lvs
 ```
 
+IMPORTANT!!! -- Edit pod limits:
+```console
+sudo nano /var/lib/kubelet/config.yaml 
+"
+kind: KubeletConfiguration
+maxPods: 1300
+"
+sudo systemctl restart kubelet
+```
+
 Scaling up:
 ```console
-kubectl scale sts/web --replicas=3
+kubectl scale sts/web --replicas=<wanted-amount>
 ```
 
 ## To clean up
