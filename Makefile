@@ -127,8 +127,8 @@ remove-worker:
 # ( $(KUBECTL) delete -f ./podpvc.yaml )
 .PHONY: remove-pods
 remove-pods:
-	kubectl delete -f statefulset.yaml
-	kubectl delete pvc -l app=nginx
+	$(KUBECTL) delete -f statefulset.yaml; \
+	$(KUBECTL) delete pvc -l app=nginx; \
 
 # OR (this can be used instead, in case you wish to re-use the node)
 # Specify WORKERNAME

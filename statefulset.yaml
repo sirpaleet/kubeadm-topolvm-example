@@ -22,6 +22,7 @@ spec:
       app: nginx # has to match .spec.template.metadata.labels
   serviceName: "nginx"
   minReadySeconds: 10 # by default is 0
+  podManagementPolicy: Parallel # default is OrderedReady
   template:
     metadata:
       labels:
@@ -34,15 +35,16 @@ spec:
         ports:
         - containerPort: 80
           name: web
-        volumeMounts:
+        volumeMounts: # if fsType is block then this needs to be volumeDevices:
         - name: www
-          mountPath: /usr/share/nginx/html
+          mountPath: /usr/share/nginx/html # if fsType is block then this needs to be devicePath: /dev/www
   volumeClaimTemplates:
   - metadata:
       name: www
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: topolvm-provisioner
+      # volumeMode: Block
       resources:
         requests:
-          storage: 10Mi
+          storage: 32Mi # for storageClass.fsType: xfs 300Mi is the minimum, ext4 is 32Mi and block is 8Mi (needs a bit different configuration)
