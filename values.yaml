@@ -10,13 +10,13 @@ cert-manager:
 storageClasses:
   - name: topolvm-provisioner
     storageClass:
-      fsType: xfs
+      fsType: xfs # This can be changed to ext4 or block
       isDefaultClass: false
       volumeBindingMode: WaitForFirstConsumer
       allowVolumeExpansion: true
   - name: topolvm-provisioner-thin
     storageClass:
-      fsType: xfs
+      fsType: xfs # This can be changed to ext4 or block
       isDefaultClass: false
       volumeBindingMode: WaitForFirstConsumer
       allowVolumeExpansion: true
