@@ -47,4 +47,4 @@ spec:
       # volumeMode: Block
       resources:
         requests:
-          storage: 32Mi # for storageClass.fsType: xfs 300Mi is the minimum, ext4 is 32Mi and block is 8Mi (needs a bit different configuration)
+          storage: 300Mi # for storageClass.fsType: xfs 300Mi is the minimum, ext4 is 32Mi and block is 8Mi (needs a bit different configuration)

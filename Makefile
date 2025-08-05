@@ -56,13 +56,13 @@ create-cluster:
 	$(SUDO) cp -i /etc/kubernetes/admin.conf ${HOME}/.kube/config; \
 	$(SUDO) chown $$(id -u):$$(id -g) ${HOME}/.kube/config; \
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml; \
+	$(KUBECTL) create namespace topolvm-system; \
 
 # Setting up cluster with TopoLVM and one control plane node
 .PHONY: run
 run:
 	$(MAKE) create-cluster
 	$(KUBECTL) apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.crds.yaml
-	$(KUBECTL) create namespace topolvm-system
 	$(KUBECTL) label namespace topolvm-system $(DOMAIN_NAME)/webhook=ignore
 	$(KUBECTL) label namespace kube-system $(DOMAIN_NAME)/webhook=ignore
 	$(HELM) repo add topolvm https://topolvm.github.io/topolvm
@@ -146,6 +146,46 @@ shutdown-worker:
 # Separate lvmd commands for memory management in control-plane vs. workers
 .PHONY: start-lvmd-control-plane
 start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
+	$(SUDO) mkdir -p /var/topolvm; \
+	$(SUDO) fallocate -l 20G /var/topolvm/loopback.img; \
+	$(SUDO) losetup -fP /var/topolvm/loopback.img; \
+	$(SUDO) losetup -j /var/topolvm/loopback.img; \
+	$(SUDO) pvcreate $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	$(SUDO) vgcreate myvg1 $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \
+	cd ..; \
+	make setup -S; \
+	make build-topolvm; \
+	cd ./kubeadm-topolvm-example; \
+	$(SUDO) systemd-run --unit=lvmd.service $$($(SUDO) find ~/ -type f -name "lvmd") --config=$(TMPDIR)/lvmd/lvmd.yaml; \
+
+# Separate lvmd commands for memory management in control-plane vs. workers
+.PHONY: start-lvmd-worker
+start-lvmd-worker: $(TMPDIR)/lvmd/lvmd.yaml
+	$(SUDO) mkdir -p /var/topolvm; \
+	$(SUDO) fallocate -l 50G /var/topolvm/loopback.img; \
+	$(SUDO) losetup -fP /var/topolvm/loopback.img; \
+	$(SUDO) losetup -j /var/topolvm/loopback.img; \
+	$(SUDO) pvcreate $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	$(SUDO) vgcreate myvg1 $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \
+	cd ..; \
+	make setup -S; \
+	make build-topolvm; \
+	cd ./kubeadm-topolvm-example; \
+	$(SUDO) systemd-run --unit=lvmd.service $$($(SUDO) find ~/ -type f -name "lvmd") --config=$(TMPDIR)/lvmd/lvmd.yaml; \
+
+.PHONY: stop-lvmd
+stop-lvmd:
+	if systemctl is-active -q lvmd.service; then $(SUDO) systemctl stop lvmd.service; fi; \
+	$(SUDO) vgremove -ffy myvg1; \
+	$(SUDO) pvremove -ffy $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	$(SUDO) losetup -d $$($(SUDO) losetup -j /var/topolvm/loopback.img | cut -d: -f1); \
+	sudo rm -rf /var/topolvm; \
+
+# Option two: Separate lvmd commands for memory management in control-plane vs. workers
+.PHONY: start-lvmd-control-plane-2
+start-lvmd-control-plane-2: $(TMPDIR)/lvmd/lvmd.yaml
 	mkdir -p build
 	go build -o build/lvmd ../cmd/lvmd
 	if [ -f $(BACKING_STORE)/backing_store ]; then $(MAKE) stop-lvmd; fi; \
@@ -156,9 +196,9 @@ start-lvmd-control-plane: $(TMPDIR)/lvmd/lvmd.yaml
 	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \
 	$(SUDO) systemd-run --unit=lvmd.service $(shell pwd)/build/lvmd --config=$(TMPDIR)/lvmd/lvmd.yaml; \
 
-# Separate lvmd commands for memory management in control-plane vs. workers
-.PHONY: start-lvmd-worker
-start-lvmd-worker: $(TMPDIR)/lvmd/lvmd.yaml
+# Option two: Separate lvmd commands for memory management in control-plane vs. workers
+.PHONY: start-lvmd-worker-2
+start-lvmd-worker-2: $(TMPDIR)/lvmd/lvmd.yaml
 	mkdir -p build
 	go build -o build/lvmd ../cmd/lvmd
 	if [ -f $(BACKING_STORE)/backing_store ]; then $(MAKE) stop-lvmd; fi; \
@@ -169,8 +209,9 @@ start-lvmd-worker: $(TMPDIR)/lvmd/lvmd.yaml
 	$(SUDO) lvcreate -T myvg1/thinpool -L 12G; \
 	$(SUDO) systemd-run --unit=lvmd.service $(shell pwd)/build/lvmd --config=$(TMPDIR)/lvmd/lvmd.yaml; \
 
-.PHONY: stop-lvmd
-stop-lvmd:
+# Option two
+.PHONY: stop-lvmd-2
+stop-lvmd-2:
 	if systemctl is-active -q lvmd.service; then $(SUDO) systemctl stop lvmd.service; fi; \
 	if [ -f $(BACKING_STORE)/backing_store ]; then \
 		$(SUDO) vgremove -ffy myvg1; \

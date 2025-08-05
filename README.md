@@ -30,10 +30,13 @@ Install required packages and configure. Do this on both the worker and control-
 ./installations.sh
 ```
 
+Note! If no Tiltfile is used use options "-2" for lvmd service make commands.
+
 Run on the control-plane intended vm:
 ```console
 ./start-cluster.sh
 ```
+(optionally "make run" insead of the make create-cluster, if no Tiltfile is needed)
 
 Run on worker vm:
 ```console
@@ -42,9 +45,9 @@ Run on worker vm:
 
 On the control-plane intended vm:
 ```console
-make finish-run
 make complete-worker WORKERNAME=<worker-name>
 ```
+(optionally "make finish-run" before "make complete-worker" if no Tiltfile is used)
 
 ## To re-setup only worker node (after delete)
 
@@ -72,6 +75,15 @@ sudo pvs
 sudo vgs
 sudo lvs
 ```
+## Controlling Tiltfile
+(Tiltfile should be in the root directory)
+
+```console
+sudo -E tilt up
+sudo -E tilt down
+```
+
+## Scaling up and down
 
 IMPORTANT!!! -- Edit pod limits:
 ```console
@@ -87,8 +99,6 @@ Scaling up:
 ```console
 kubectl scale sts/web --replicas=<wanted-amount>
 ```
-
-## To clean up
 
 ---
 Clean up STS (also part of remove-worker):

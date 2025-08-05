@@ -5,7 +5,7 @@ sudo pvs
 sudo vgs
 sudo lvs
 
-make run
+make create-cluster
 
 # Check status
 kubectl get deployments -A

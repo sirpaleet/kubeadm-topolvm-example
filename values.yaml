@@ -7,10 +7,14 @@ lvmd:
 cert-manager:
   enabled: true
 
+# Take this out if no Tiltfile is used
+image:
+  repository: ttl.sh/topolvm-local
+
 storageClasses:
   - name: topolvm-provisioner
     storageClass:
-      fsType: ext4 # This can be changed to xfs, ext4 or block
+      fsType: xfs # This can be changed to xfs, ext4 or block
       isDefaultClass: false
       volumeBindingMode: WaitForFirstConsumer
       allowVolumeExpansion: true
@@ -18,7 +22,7 @@ storageClasses:
       "topolvm.io/device-class": "ssd"
   - name: topolvm-provisioner-thin
     storageClass:
-      fsType: ext4 # This can be changed to xfs, ext4 or block
+      fsType: xfs # This can be changed to xfs, ext4 or block
       isDefaultClass: false
       volumeBindingMode: WaitForFirstConsumer
       allowVolumeExpansion: true
