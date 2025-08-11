@@ -60,6 +60,6 @@ helm_resource(
     namespace='topolvm-system',
     image_deps=[IMAGE],
     image_keys=[('image.repository', 'image.tag')],
-    flags=['--values=./example/values.yaml'],
+    flags=['--values=./kubeadm-topolvm-example/values.yaml'],
     resource_deps=['binary-build']
 )

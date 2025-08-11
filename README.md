@@ -1,6 +1,8 @@
 # Multiple pods and pvcs with kubeadm init-made cluster. Two nodes: control-plane and worker on different vm:s.
-## This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
 
+This directory should first be placed in the home directory of a machine with ssh connection to git and then run the installations.sh script.
+
+## Starting the cluster
 Add environment variables:
 ```console
 echo 'export PATH=/home/ubuntu/.krew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
@@ -55,6 +57,13 @@ Run on worker vm:
 ```console
 ./start-worker.sh <ip-address> <token> <ca-cert-hash>
 ```
+
+IMPORTANT!!! -- Edit pod limits:
+```console
+echo 'maxPods: 1300' | sudo tee -a /var/lib/kubelet/config.yaml
+sudo systemctl restart kubelet
+```
+
 On the control-plane intended vm:
 ```console
 make complete-worker WORKERNAME=<worker-name>
@@ -84,16 +93,6 @@ sudo -E tilt down
 ```
 
 ## Scaling up and down
-
-IMPORTANT!!! -- Edit pod limits:
-```console
-sudo nano /var/lib/kubelet/config.yaml 
-"
-kind: KubeletConfiguration
-maxPods: 1300
-"
-sudo systemctl restart kubelet
-```
 
 Scaling up:
 ```console
