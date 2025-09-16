@@ -1,0 +1,425 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc1
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc2
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc3
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc4
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc5
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc6
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc7
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc8
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc9
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc10
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc11
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc12
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc13
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc14
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc15
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc16
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc17
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc18
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc19
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc20
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Mi
+  storageClassName: topolvm-provisioner
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 50
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        resources: # Resource limits may need to be edited as they were added to fix warning
+          requests:
+            memory: "700Mi"
+            cpu: "0.2"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        # command:
+        # - /bin/sleep
+        # - "9999"
+        terminationMessagePolicy: File
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /data1
+          name: mypvc-volume1
+        - mountPath: /data2
+          name: mypvc-volume2
+        - mountPath: /data3
+          name: mypvc-volume3
+        - mountPath: /data4
+          name: mypvc-volume4
+        - mountPath: /data5
+          name: mypvc-volume5
+        - mountPath: /data6
+          name: mypvc-volume6
+        - mountPath: /data7
+          name: mypvc-volume7
+        - mountPath: /data8
+          name: mypvc-volume8
+        - mountPath: /data9
+          name: mypvc-volume9
+        - mountPath: /data10
+          name: mypvc-volume10
+        - mountPath: /data11
+          name: mypvc-volume11
+        - mountPath: /data12
+          name: mypvc-volume12
+        - mountPath: /data13
+          name: mypvc-volume13
+        - mountPath: /data14
+          name: mypvc-volume14
+        - mountPath: /data15
+          name: mypvc-volume15
+        - mountPath: /data16
+          name: mypvc-volume16
+        - mountPath: /data17
+          name: mypvc-volume17
+        - mountPath: /data18
+          name: mypvc-volume18
+        - mountPath: /data19
+          name: mypvc-volume19
+        - mountPath: /data20
+          name: mypvc-volume20
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 2000
+        runAsGroup: 3000
+        runAsUser: 2000
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - name: mypvc-volume1
+        persistentVolumeClaim:
+          claimName: my-pvc1
+      - name: mypvc-volume2
+        persistentVolumeClaim:
+          claimName: my-pvc2
+      - name: mypvc-volume3
+        persistentVolumeClaim:
+          claimName: my-pvc3
+      - name: mypvc-volume4
+        persistentVolumeClaim:
+          claimName: my-pvc4
+      - name: mypvc-volume5
+        persistentVolumeClaim:
+          claimName: my-pvc5
+      - name: mypvc-volume6
+        persistentVolumeClaim:
+          claimName: my-pvc6
+      - name: mypvc-volume7
+        persistentVolumeClaim:
+          claimName: my-pvc7
+      - name: mypvc-volume8
+        persistentVolumeClaim:
+          claimName: my-pvc8
+      - name: mypvc-volume9
+        persistentVolumeClaim:
+          claimName: my-pvc9
+      - name: mypvc-volume10
+        persistentVolumeClaim:
+          claimName: my-pvc10
+      - name: mypvc-volume11
+        persistentVolumeClaim:
+          claimName: my-pvc11
+      - name: mypvc-volume12
+        persistentVolumeClaim:
+          claimName: my-pvc12
+      - name: mypvc-volume13
+        persistentVolumeClaim:
+          claimName: my-pvc13
+      - name: mypvc-volume14
+        persistentVolumeClaim:
+          claimName: my-pvc14
+      - name: mypvc-volume15
+        persistentVolumeClaim:
+          claimName: my-pvc15
+      - name: mypvc-volume16
+        persistentVolumeClaim:
+          claimName: my-pvc16
+      - name: mypvc-volume17
+        persistentVolumeClaim:
+          claimName: my-pvc17
+      - name: mypvc-volume18
+        persistentVolumeClaim:
+          claimName: my-pvc18
+      - name: mypvc-volume19
+        persistentVolumeClaim:
+          claimName: my-pvc19
+      - name: mypvc-volume20
+        persistentVolumeClaim:
+          claimName: my-pvc20

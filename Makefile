@@ -89,9 +89,12 @@ create-worker:
 
 # Applies pods and pvcs to worker node
 # Specify WORKERNAME
+# ALSO:
 # ( timeout 120 sh -c "until $(KUBECTL) apply -f podpvc.yaml; do sleep 10; done" )
 # ( $(KUBECTL) wait --for=condition=ready --timeout=120s -n default pod -l app=kubeadm-topolvm-example )
 # ( [ $$($(KUBECTL) get --no-headers=true $(LOGICALVOLUME_GK_NAME) | wc -l) -ne 0 ] ) 
+# OR:
+# 	timeout 120 sh -c "until $(KUBECTL) apply -f deployment.yaml; do sleep 20; done"
 .PHONY: complete-worker
 complete-worker:
 	$(KUBECTL) label node $(WORKERNAME) node-role.kubernetes.io/worker=worker
